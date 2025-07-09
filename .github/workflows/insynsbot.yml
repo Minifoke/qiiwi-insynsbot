@@ -1,16 +1,16 @@
 name: Insynsbot
 
 on:
-  workflow_dispatch:  # Manuell start
+  workflow_dispatch:  # Manuell start via GitHub
   schedule:
-    - cron: "0 * * * *"  # Kör varje timme
+    - cron: "0 * * * *"  # Kör varje timme (justera om du vill)
 
 jobs:
   run:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out repository
+      - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -22,19 +22,17 @@ jobs:
         run: |
           pip install requests beautifulsoup4
 
-      - name: Download previous latest_trade.json (if exists)
+      - name: Download latest_trade.json artifact (om den finns)
         uses: actions/download-artifact@v4
         with:
           name: latest_trade
           path: ./
-        continue-on-error: true  # OK om artefakt saknas första gången
+        continue-on-error: true  # Hoppa över fel om artifact saknas första gången
 
-      - name: Run insynsbot
-        env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      - name: Run bot
         run: python insynsbot.py
 
-      - name: Upload latest_trade.json for next run
+      - name: Upload latest_trade.json artifact (för nästa körning)
         uses: actions/upload-artifact@v4
         with:
           name: latest_trade
